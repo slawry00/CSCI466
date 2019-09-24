@@ -8,14 +8,14 @@ import sys
 
 def main():
     if len(sys.argv) < 2:
-        print("Need command line argument: opp_board = 0, own_board = 1")
+        print("Need command line argument: player1_fires = 1, player2_fires = 2")
     else:
-        if sys.argv[1] == '0':
-            my_file = open("opponent_board.html", "w")
-        elif sys.argv[1] == '1':
-            my_file = open("own_board.html", "w")
+        if sys.argv[1] == '1':
+            my_file = open("player1_fires.txt", "w")
+        elif sys.argv[1] == '2':
+            my_file = open("player2_fires.txt", "w")
         else:
-            print("Only 0 or 1 are valid inputs")
+            print("Only 1 or 2 are valid inputs")
             exit()
 
         for i in range(10):
