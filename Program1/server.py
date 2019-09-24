@@ -124,6 +124,23 @@ def check_sink(fire_spot):
     return sink
 
 class MyHandler(http.server.BaseHTTPRequestHandler):
+    def do_GET(self):
+        print (self.path)
+        if (self.path == "/own_board.html"):
+            mess_type = 200
+        elif (self.path == "/opponent_board.html"):
+            mess_type = 200
+        else:
+            mess_type = 404
+
+        self.send_response(mess_type)
+        self.send_header('Content-type', 'text/html')
+        self.end_headers()
+
+        if mess_type == 200:
+            self.wfile.write("<html><body><h1>PUT STUFF HERE</h1></body></html>".encode("utf-8"))
+            # gonna have to determine which player it is somehow
+
     def do_POST(self):
         global cur_mat
         data = urllib.parse.parse_qs(self.path)
