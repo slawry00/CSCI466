@@ -9,40 +9,28 @@ import http.server, sys, urllib.request, urllib.parse
 if len(sys.argv) < 4:
     print("Format: python3 server.py port# board_file_player1 board_file_player2")
     exit()
-else:
+
+def main():
+    global board_mat1
+    global board_mat2
+    global cur_mat
+
     port_num = sys.argv[1]
-    board_mat1 = []
-    board_mat2 = []
+    if is_num(port_num):
+        port_num = int(port_num)
+    else:
+        print("invalid port_number")
+        exit()
+
     cur_mat = []
-    with open(sys.argv[2], "r") as board:
-        for row in board:
-            board_row = []
-            for spot in row:
-                if spot != '\n':
-                    board_row.append(spot)
-            board_mat1.append(board_row)
+    board_mat1 = make_mat(sys.argv[2])
+    board_mat2 = make_mat(sys.argv[3])
 
-    with open(sys.argv[3], "r") as board:
-        for row in board:
-            board_row = []
-            for spot in row:
-                if spot != '\n':
-                    board_row.append(spot)
-            board_mat2.append(board_row)
 
-#    print("board1: ")
-#    for row in board_mat1:
-#        print(row)
-
-#    print("board2: ")
-#    for row in board_mat2:
-#        print(row)
-
-#runs the server indefinitely
-def run():
+    # start the server
     try:
-        my_server = http.server.HTTPServer(('localhost', 5000), MyHandler)
-        my_server.serve_forever()
+        my_server = http.server.HTTPServer(('localhost', port_num), MyHandler)
+        my_server.serve_forever() #runs the server indefinitely
     except KeyboardInterrupt:
         print ('^C received, shutting down the web server')
         my_server.socket.close()
@@ -108,9 +96,6 @@ def update_file(player):
             for spot in row:
                 board_file.write(spot)
 
-    #for row in cur_mat:
-    #    print(row)
-
 #checks if the hit sank the ship.
 # returns (sink = 0,C,B,R,S or D) --- 0 means no sink, C = carrier, B = battleship, R = cruiser,
 #S = submarine, D = destroyer
@@ -123,23 +108,77 @@ def check_sink(fire_spot):
                 sink = 0
     return sink
 
+# returns a string in format from a matrix
+def format_file(some_file):
+    stream = ""
+    stream += '<html>'
+    stream += '<body>'
+    for i in range(11):
+        if i == 0:
+            stream += '<span>'
+            stream += '</span>'
+        else:
+            stream += '<span>'
+            stream += str(i-1)
+            stream += '</span>'
+    stream += '<br>'
+
+    with open(some_file, "r") as board:
+        for i, row in enumerate(board):
+            if i > 0:
+                stream += '<br>'
+            stream += '<span>'
+            stream += str(i)
+            stream += '</span>'
+            for spot in row:
+                stream += '<span>'
+                stream += spot
+                stream += '</span>'
+    stream += '<style>span { width: 16px; display: inline-block;}</style>'
+    stream += '</body>'
+    stream += '</html>'
+
+    return stream.encode("utf-8")
+# Makes the matrix from a file and returns it
+def make_mat(some_file):
+    mat = []
+    with open(some_file, "r") as board:
+        for row in board:
+            board_row = []
+            for spot in row:
+                if spot != '\n':
+                    board_row.append(spot)
+            mat.append(board_row)
+    return mat
+
 class MyHandler(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
-        print (self.path)
-        if (self.path == "/own_board.html"):
+        try:
+            print(self.requestline)
             mess_type = 200
-        elif (self.path == "/opponent_board.html"):
-            mess_type = 200
-        else:
-            mess_type = 404
+            if (self.path == "/player1_board.txt"): #lazy "or" formatting here
+                req_file = self.path[1:]
+            elif (self.path == "/player2_board.txt"):
+                req_file = self.path[1:]
+            elif (self.path == "/player1_fires.txt"):
+                req_file = self.path[1:]
+            elif (self.path == "/player2_fires.txt"):
+                req_file = self.path[1:]
+            else:
+                mess_type = 404
 
-        self.send_response(mess_type)
-        self.send_header('Content-type', 'text/html')
-        self.end_headers()
+            self.send_response(mess_type)
+            self.send_header('Content-type', 'text/html')
+            self.end_headers()
 
-        if mess_type == 200:
-            self.wfile.write("<html><body><h1>PUT STUFF HERE</h1></body></html>".encode("utf-8"))
-            # gonna have to determine which player it is somehow
+            if mess_type == 200:
+                formed_file = format_file(req_file)
+                self.wfile.write(formed_file)
+
+        except Exception as error:
+            print(error)
+            self.send_response(400)
+
 
     def do_POST(self):
         global cur_mat
@@ -175,4 +214,4 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    run()
+    main()
