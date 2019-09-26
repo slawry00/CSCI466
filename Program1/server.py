@@ -1,5 +1,4 @@
-# Spencer Lawry
-# Been a while since I've used Python...
+# Spencer Lawry & Philip Gales
 # 9/22/19
 # Networks
 # Programming Assignment 1
@@ -153,32 +152,28 @@ def make_mat(some_file):
 
 class MyHandler(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
-        try:
-            print(self.requestline)
-            mess_type = 200
-            if (self.path == "/player1_board.txt"): #lazy "or" formatting here
-                req_file = self.path[1:]
-            elif (self.path == "/player2_board.txt"):
-                req_file = self.path[1:]
-            elif (self.path == "/player1_fires.txt"):
-                req_file = self.path[1:]
-            elif (self.path == "/player2_fires.txt"):
-                req_file = self.path[1:]
-            else:
-                mess_type = 404
+        print(self.requestline)
+        mess_type = 200
+        if (self.path == "/player1_board.txt"): #lazy "or" formatting here
+            req_file = self.path[1:]
+        elif (self.path == "/player2_board.txt"):
+            req_file = self.path[1:]
+        elif (self.path == "/player1_fires.txt"):
+            req_file = self.path[1:]
+        elif (self.path == "/player2_fires.txt"):
+            req_file = self.path[1:]
+        elif (self.path == "/favicon.ico"):
+            mess_type = 204
+        else:
+            mess_type = 404
 
-            self.send_response(mess_type)
-            self.send_header('Content-type', 'text/html')
-            self.end_headers()
+        self.send_response(mess_type)
+        self.send_header('Content-type', 'text/html')
+        self.end_headers()
 
-            if mess_type == 200:
-                formed_file = format_file(req_file)
-                self.wfile.write(formed_file)
-
-        except Exception as error:
-            print(error)
-            self.send_response(400)
-
+        if mess_type == 200:
+            formed_file = format_file(req_file)
+            self.wfile.write(formed_file)
 
     def do_POST(self):
         global cur_mat
