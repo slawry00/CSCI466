@@ -27,14 +27,15 @@ class Interface:
         self.queue.put(pkt, block)
 
 
-## Implements a network layer packet (different from the RDT packet
+## Implements a network layer packet (different from the RDT packet:wq
+
 # from programming assignment 2).
 # NOTE: This class will need to be extended to for the packet to include
 # the fields necessary for the completion of this assignment.
 class NetworkPacket:
     ## packet encoding lengths
     dst_addr_S_length = 5
-    #orig_mtu_length = 4 # i need to implement this...............
+    #orig_addr_S_length = 5 I may need to do this.
     pack_num_length = 1
     more_frag_length = 1
     frag_num_length = 1
@@ -171,12 +172,14 @@ class Router:
     ##@param name: friendly router name for debugging
     # @param intf_count: the number of input and output interfaces
     # @param max_queue_size: max queue length (passed to Interface)
-    def __init__(self, name, intf_count, max_queue_size):
+    # @param routing table: the routing table for this router as a Dictionary
+    def __init__(self, name, intf_count, max_queue_size, routing_table):
         self.stop = False #for thread termination
         self.name = name
         #create a list of interfaces
         self.in_intf_L = [Interface(max_queue_size) for _ in range(intf_count)]
         self.out_intf_L = [Interface(max_queue_size) for _ in range(intf_count)]
+        self.routing_table = routing_table
 
     ## called when printing the object
     def __str__(self):
@@ -195,10 +198,11 @@ class Router:
                     p = NetworkPacket.from_byte_S(pkt_S) #parse a packet out
                     input_intf = self.in_intf_L[i]
                     input_mtu = input_intf.mtu
-                    # HERE you will need to implement a lookup into the
-                    # forwarding table to find the appropriate outgoing interface
-                    # for now we assume the outgoing interface is also i
-                    output_intf = self.out_intf_L[i] # for now
+# needs work here still and in simulation routing table definition
+                    out_intf_num = int(self.routing_table[str(i)]) 
+                    # computes the output port from the routing table. the input port = i
+                    # and the output port is given by the value from the dictionary w/ key i
+                    output_intf = self.out_intf_L[out_intf_num] 
                     output_mtu = output_intf.mtu
                     if input_mtu > output_mtu:
                         self.fragment_send(p, input_intf, output_intf, i)
