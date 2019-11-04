@@ -1,5 +1,4 @@
-# Spencer Lawry
-# Been a while since I've used Python...
+# Spencer Lawry & Philip Gales
 # 9/22/19
 # Networks
 # Programming Assignment 1
